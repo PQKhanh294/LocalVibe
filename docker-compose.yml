@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SuperStrongPass123! # Mật khẩu database
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  backend:
+    build:
+      context: ./LocalVibe.Api
+    ports:
+      - "7011:8080" # Map cổng 7011 ở ngoài vào 8080 ở trong
+    environment:
+      # Kết nối tới Database nội bộ trong Docker
+      - ConnectionStrings__DefaultConnection=Server=db;Database=LocalVibeDb;User Id=sa;Password=SuperStrongPass123!;TrustServerCertificate=True;
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./LocalVibe.Web
+      args:
+        # Quan trọng: Lát nữa thay 'IP_CỦA_BẠN' bằng IP Public của AWS EC2
+        - VITE_API_BASE_URL=http://15.135.173.77:7011/api
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  sqlserver_data:

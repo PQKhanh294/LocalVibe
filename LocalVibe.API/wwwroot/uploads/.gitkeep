@@ -1,0 +1,2 @@
+# LocalVibe uploads directory
+# This directory is served as static files via app.UseStaticFiles()
